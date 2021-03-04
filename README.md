@@ -1,4 +1,8 @@
 **项目说明** 
+mall2021基于renren-fast快速构建的一个微服务电商项目
+技术选型及架构图
+![技术架构图](mall2021微服务架构图.jpg)
+
 - renren-fast是一个轻量级的，前后端分离的Java快速开发平台，能快速开发项目并交付【接私活利器】
 - 支持MySQL、Oracle、SQL Server、PostgreSQL等主流数据库
 - 前端地址：https://gitee.com/renrenio/renren-fast-vue
