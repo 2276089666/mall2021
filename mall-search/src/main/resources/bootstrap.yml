@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: mall-search
+
+  cloud:
+    nacos:
+      server-addr: 159.75.22.98:8080
+

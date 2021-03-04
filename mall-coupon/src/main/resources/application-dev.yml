@@ -1,0 +1,9 @@
+#生产环境开启日志,看一下sql等信息
+logging:
+  level:
+    com.cloud.mall: debug
+
+spring:
+  datasource:
+    hikari:
+      max-lifetime: 500000

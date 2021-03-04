@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: mall-thirdParty
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 159.75.22.98:8080
+      #会默认读我们mall-coupon.yaml的配置文件
+      config:
+        server-addr: 159.75.22.98:8080
+        #配置中心的文件形式
+        file-extension: yaml
+        namespace: 023b5b50-1f66-4a98-b057-24da8d567c59
+        group: dev

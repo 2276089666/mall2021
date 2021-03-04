@@ -1,0 +1,26 @@
+
+spring:
+  application:
+    name: mall-product
+
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 159.75.22.98:8080
+#        会默认读我们mall-coupon.yaml的配置文件
+      config:
+        server-addr: 159.75.22.98:8080
+#        配置中心的文件形式
+        file-extension: yaml
+#        配置中心的命名空间,可做生产和测试环境隔离,但是我们使用分组去做环境隔离,我们每个微服务创建一个命名空间
+        namespace: 6ff0b121-1f46-4837-8501-71b4be501762
+#        我们将每个微服务创建一个命名空间,使用组来做测试和生产环境隔离
+        group: prod
+#        将我们的配置文件迁移到nacos上面去
+        extension-configs:
+          - data-id: datasource.yaml
+            refresh: true
+            group: prod
+          - data-id: mybatis.yaml
+            refresh: true
+            group: prod

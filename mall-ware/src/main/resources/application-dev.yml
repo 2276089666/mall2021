@@ -1,0 +1,3 @@
+logging:
+  level:
+    com.cloud.mall.ware: debug
