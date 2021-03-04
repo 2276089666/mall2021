@@ -1,5 +1,6 @@
 package com.cloud.mall.product.service.impl;
 
+import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -263,31 +264,21 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
                 }
             }
 
-
-            R hasStock=null;
-            List<LinkedHashMap> data=null;
+            List<SkuHasStockTo> data = null;
             try {
                 //调用远程服务查看是否有库存
                 List<Long> collect = skuInfoEntities.stream().map(SkuInfoEntity::getSkuId).collect(Collectors.toList());
-                hasStock= wareFeignService.getHasStock(collect);
+                R hasStock = wareFeignService.getHasStock(collect);
                 //不知道为什么Spring cloud fegin调用返回结果将SkuHasStockTo转换为LinkedHashMap问题
-                data= (List<LinkedHashMap>) hasStock.get("data");
-            }catch (Exception e){
-                log.error("库存服务查询异常,原因{}",e);
+                data = hasStock.getData(new TypeReference<List<SkuHasStockTo>>() {
+                });
+            } catch (Exception e) {
+                log.error("库存服务查询异常,原因{}", e);
             }
             Map<Long, Integer> hasStockMap = null;
             if (data != null && !data.isEmpty()) {
                 //将数据转为map,方便我们下面的对象赋值
-                hasStockMap = data.stream().map(x->{
-                    //一个个的将LinkedHashMap的值映射出来
-                    SkuHasStockTo skuHasStockTo = new SkuHasStockTo();
-                    String string = x.get("skuId").toString();
-                    Long skuId=Long.parseLong(string);
-                    skuHasStockTo.setSkuId(skuId);
-                    Integer stock = (Integer) x.get("stock");
-                    skuHasStockTo.setStock(stock);
-                    return skuHasStockTo;
-                }).collect(Collectors.toMap(SkuHasStockTo::getSkuId,SkuHasStockTo::getStock));
+                hasStockMap = data.stream().collect(Collectors.toMap(SkuHasStockTo::getSkuId, SkuHasStockTo::getStock));
             }
 
             List<SkuEsModel.Attrs> finalAttrsList = attrsList;
@@ -299,12 +290,12 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
                 skuEsModel.setSkuPrice(a.getPrice());
                 skuEsModel.setSkuImg(a.getSkuDefaultImg());
 
-                if (finalHasStockMap ==null){
+                if (finalHasStockMap == null) {
                     skuEsModel.setHasStock(true);
-                }else {
-                    if (finalHasStockMap.get(a.getSkuId())!=null){
+                } else {
+                    if (finalHasStockMap.get(a.getSkuId()) != null) {
                         skuEsModel.setHasStock(finalHasStockMap.get(a.getSkuId()) > 0);
-                    }else {
+                    } else {
                         skuEsModel.setHasStock(false);
                     }
 
@@ -326,45 +317,45 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
             }).collect(Collectors.toList());
 
             R r = searchFeignService.productStatusUp(collect);
-           if (r.getCode()==0){
-               //es保存成功,修改spu的上架状态为上架
-               this.baseMapper.updateSpuStatus(spuId, ProductConstant.ProductStatus.SPU_UP.getCode());
-           }else {
+            if (r.getCode() == 0) {
+                //es保存成功,修改spu的上架状态为上架
+                this.baseMapper.updateSpuStatus(spuId, ProductConstant.ProductStatus.SPU_UP.getCode());
+            } else {
 //               调用失败
-               // TODO: 2021/3/2 重复调用,接口幂等性问题,重试机制
-               /**
-                * openfeign调用流程 SynchronousMethodHandler的invoke方法
-                * 1.构造请求数据,将对象转为json
-                * RequestTemplate template = this.buildTemplateFromArgs.create(argv);
-                * 2.发送请求进行执行(执行成功会解码响应数据)
-                * this.executeAndDecode(template, options);
-                * 3.执行请求会有重试机制
-                *       while(true) {
-                *             try {
-                *                 //执行请求
-                *                 return this.executeAndDecode(template, options);
-                *             } catch (RetryableException var9) {
-                *                 RetryableException e = var9;
-                *
-                *                 try {
-                *                      //重试器重试(有异常抛异常,没有继续重试)
-                *                     retryer.continueOrPropagate(e);
-                *                 } catch (RetryableException var8) {
-                *                     Throwable cause = var8.getCause();
-                *                     if (this.propagationPolicy == ExceptionPropagationPolicy.UNWRAP && cause != null) {
-                *                         throw cause;
-                *                     }
-                *
-                *                     throw var8;
-                *                 }
-                *                       //记录重试日志
-                *                 if (this.logLevel != Level.NONE) {
-                *                     this.logger.logRetry(this.metadata.configKey(), this.logLevel);
-                *                 }
-                *             }
-                *         }
-                */
-           }
+                // TODO: 2021/3/2 重复调用,接口幂等性问题,重试机制
+                /**
+                 * openfeign调用流程 SynchronousMethodHandler的invoke方法
+                 * 1.构造请求数据,将对象转为json
+                 * RequestTemplate template = this.buildTemplateFromArgs.create(argv);
+                 * 2.发送请求进行执行(执行成功会解码响应数据)
+                 * this.executeAndDecode(template, options);
+                 * 3.执行请求会有重试机制
+                 *       while(true) {
+                 *             try {
+                 *                 //执行请求
+                 *                 return this.executeAndDecode(template, options);
+                 *             } catch (RetryableException var9) {
+                 *                 RetryableException e = var9;
+                 *
+                 *                 try {
+                 *                      //重试器重试(有异常抛异常,没有继续重试)
+                 *                     retryer.continueOrPropagate(e);
+                 *                 } catch (RetryableException var8) {
+                 *                     Throwable cause = var8.getCause();
+                 *                     if (this.propagationPolicy == ExceptionPropagationPolicy.UNWRAP && cause != null) {
+                 *                         throw cause;
+                 *                     }
+                 *
+                 *                     throw var8;
+                 *                 }
+                 *                       //记录重试日志
+                 *                 if (this.logLevel != Level.NONE) {
+                 *                     this.logger.logRetry(this.metadata.configKey(), this.logLevel);
+                 *                 }
+                 *             }
+                 *         }
+                 */
+            }
         }
     }
 
