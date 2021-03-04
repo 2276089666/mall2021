@@ -11,6 +11,21 @@
 
     <groupId>org.example.mall.member</groupId>
     <artifactId>mall-member</artifactId>
-
+    <dependencies>
+        <dependency>
+            <groupId>org.example.mall</groupId>
+            <artifactId>mall-commons</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-openfeign</artifactId>
+        </dependency>
+    </dependencies>
 
 </project>

@@ -22,6 +22,12 @@
         <module>mall-member</module>
         <module>mall-order</module>
         <module>mall-ware</module>
+        <module>renren-fast</module>
+        <module>renren-generator</module>
+        <module>mall-commons</module>
+        <module>mall-gateway</module>
+        <module>mall-thridParty</module>
+        <module>mall-search</module>
     </modules>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -48,58 +54,46 @@
         <mall-common.version>1.0-SNAPSHOT</mall-common.version>
         <mall-mbg.version>1.0-SNAPSHOT</mall-mbg.version>
         <mall-security.version>1.0-SNAPSHOT</mall-security.version>
+        <spring.cloud.version>Hoxton.SR8</spring.cloud.version>
+        <spring.cloud.alibaba.version>2.2.3.RELEASE</spring.cloud.alibaba.version>
     </properties>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-actuator</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-aop</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>cn.hutool</groupId>
-            <artifactId>hutool-all</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-configuration-processor</artifactId>
-            <optional>true</optional>
-        </dependency>
-    </dependencies>
 
     <dependencyManagement>
         <dependencies>
-<!--            &lt;!&ndash;mall通用模块&ndash;&gt;-->
-<!--            <dependency>-->
-<!--                <groupId>com.macro.mall</groupId>-->
-<!--                <artifactId>mall-common</artifactId>-->
-<!--                <version>${mall-common.version}</version>-->
-<!--            </dependency>-->
-<!--&lt;!&ndash;            mall中MBG生成模块&ndash;&gt;-->
-<!--            <dependency>-->
-<!--                <groupId>com.macro.mall</groupId>-->
-<!--                <artifactId>mall-mbg</artifactId>-->
-<!--                <version>${mall-mbg.version}</version>-->
-<!--            </dependency>-->
-<!--            &lt;!&ndash;mall安全模块&ndash;&gt;-->
-<!--            <dependency>-->
-<!--                <groupId>com.macro.mall</groupId>-->
-<!--                <artifactId>mall-security</artifactId>-->
-<!--                <version>${mall-security.version}</version>-->
-<!--            </dependency>-->
-<!--            MyBatis分页插件starter-->
+            <!--            &lt;!&ndash;mall通用模块&ndash;&gt;-->
+            <!--            <dependency>-->
+            <!--                <groupId>com.macro.mall</groupId>-->
+            <!--                <artifactId>mall-common</artifactId>-->
+            <!--                <version>${mall-common.version}</version>-->
+            <!--            </dependency>-->
+            <!--&lt;!&ndash;            mall中MBG生成模块&ndash;&gt;-->
+            <!--            <dependency>-->
+            <!--                <groupId>com.macro.mall</groupId>-->
+            <!--                <artifactId>mall-mbg</artifactId>-->
+            <!--                <version>${mall-mbg.version}</version>-->
+            <!--            </dependency>-->
+            <!--            &lt;!&ndash;mall安全模块&ndash;&gt;-->
+            <!--            <dependency>-->
+            <!--                <groupId>com.macro.mall</groupId>-->
+            <!--                <artifactId>mall-security</artifactId>-->
+            <!--                <version>${mall-security.version}</version>-->
+            <!--            </dependency>-->
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring.cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.cloud</groupId>
+                <artifactId>spring-cloud-alibaba-dependencies</artifactId>
+                <version>${spring.cloud.alibaba.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!--            MyBatis分页插件starter-->
             <dependency>
                 <groupId>com.github.pagehelper</groupId>
                 <artifactId>pagehelper-spring-boot-starter</artifactId>
@@ -175,12 +169,12 @@
                 <artifactId>jjwt</artifactId>
                 <version>${jjwt.version}</version>
             </dependency>
-            <!-- 阿里云OSS -->
-            <dependency>
-                <groupId>com.aliyun.oss</groupId>
-                <artifactId>aliyun-sdk-oss</artifactId>
-                <version>${aliyun-oss.version}</version>
-            </dependency>
+<!--            &lt;!&ndash; 阿里云OSS &ndash;&gt;-->
+<!--            <dependency>-->
+<!--                <groupId>com.aliyun.oss</groupId>-->
+<!--                <artifactId>aliyun-sdk-oss</artifactId>-->
+<!--                <version>${aliyun-oss.version}</version>-->
+<!--            </dependency>-->
             <!--集成logstash-->
             <dependency>
                 <groupId>net.logstash.logback</groupId>
@@ -208,13 +202,13 @@
                     <artifactId>docker-maven-plugin</artifactId>
                     <version>${docker.maven.plugin.version}</version>
                     <!--<executions>-->
-                        <!--<execution>-->
-                            <!--<id>build-image</id>-->
-                            <!--<phase>package</phase>-->
-                            <!--<goals>-->
-                                <!--<goal>build</goal>-->
-                            <!--</goals>-->
-                        <!--</execution>-->
+                    <!--<execution>-->
+                    <!--<id>build-image</id>-->
+                    <!--<phase>package</phase>-->
+                    <!--<goals>-->
+                    <!--<goal>build</goal>-->
+                    <!--</goals>-->
+                    <!--</execution>-->
                     <!--</executions>-->
                     <configuration>
                         <imageName>mall/${project.artifactId}:${project.version}</imageName>

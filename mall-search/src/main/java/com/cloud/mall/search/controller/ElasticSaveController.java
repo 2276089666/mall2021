@@ -33,6 +33,6 @@ public class ElasticSaveController {
             log.error("ElasticSaveController商品上架异常:{}",e);
             return R.error(ExceptionCode.PRODUCT_ON_ES_EXCEPTION.getCode(),ExceptionCode.PRODUCT_ON_ES_EXCEPTION.getMessage());
         }
-        return aBoolean ? R.ok():R.error(ExceptionCode.PRODUCT_ON_ES_EXCEPTION.getCode(),ExceptionCode.PRODUCT_ON_ES_EXCEPTION.getMessage());
+        return aBoolean ? R.error(ExceptionCode.PRODUCT_ON_ES_EXCEPTION.getCode(),ExceptionCode.PRODUCT_ON_ES_EXCEPTION.getMessage()):R.ok();
     }
 }
