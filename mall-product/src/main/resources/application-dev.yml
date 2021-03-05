@@ -7,3 +7,6 @@ spring:
   datasource:
     hikari:
       max-lifetime: 500000
+#      关闭模板引擎缓存,开发期间的实时效果
+  thymeleaf:
+    cache: false

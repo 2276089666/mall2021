@@ -40,7 +40,7 @@ spring:
 #    配置nacos的注册中心地址
   cloud:
     nacos:
-      server-addr: 159.75.22.98:8080
+      server-addr: 159.75.22.98:80
   application:
     name: renren-fast
 #  resources:
