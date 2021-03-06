@@ -3,6 +3,7 @@ package com.cloud.mall.product.web;
 import com.cloud.mall.product.entity.CategoryEntity;
 import com.cloud.mall.product.service.CategoryService;
 import com.cloud.mall.product.vo.Category2Vo;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,6 +19,7 @@ import java.util.Map;
  * @Version 1.0
  */
 @Controller
+@Slf4j
 public class IndexController {
 
     @Autowired
@@ -25,8 +27,9 @@ public class IndexController {
 
     @GetMapping(value = {"/index","/index.html","/"})
     public String indexPage(Model model){
+        long begin = System.currentTimeMillis();
         List<CategoryEntity> categoryEntityList =categoryService.getLevelOne();
-
+        log.info("查询数据库一级菜单消耗的时间为:{}",System.currentTimeMillis()-begin);
         model.addAttribute("categorys",categoryEntityList);
         //因为有mvc的前缀和后缀拼串,这个请求就会返回到src\main\resources\templates\index.html
         return "index";

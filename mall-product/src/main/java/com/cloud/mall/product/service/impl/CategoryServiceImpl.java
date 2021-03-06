@@ -1,5 +1,7 @@
 package com.cloud.mall.product.service.impl;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -10,7 +12,9 @@ import com.cloud.mall.product.entity.CategoryEntity;
 import com.cloud.mall.product.service.CategoryBrandRelationService;
 import com.cloud.mall.product.service.CategoryService;
 import com.cloud.mall.product.vo.Category2Vo;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -18,10 +22,12 @@ import org.springframework.util.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 
 @Service("categoryService")
+@Slf4j
 public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity> implements CategoryService {
 
     @Override
@@ -125,13 +131,58 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         return categoryEntityList;
     }
 
+    @Autowired
+    StringRedisTemplate stringRedisTemplate;
+
+    /**
+     * 引入redis缓存
+     *
+     * @return
+     */
     @Override
     public Map<String, List<Category2Vo>> getCategoryJson() {
+        // TODO: 2021/3/6 1. 空结果缓存:解决缓存穿透(多个请求对0个缓存 n:0)   2.设置过期时间(加随机值):解决缓存雪崩(多个请求对多个缓存同时失效 n:n)   3.加锁:解决缓存击穿 (多个请求对1个缓存,这个缓存失效 n:1)
+
+        String categoryJson = stringRedisTemplate.opsForValue().get("categoryJson");
+        if (StringUtils.isEmpty(categoryJson)) {
+            Map<String, List<Category2Vo>> categoryJsonBySql = getCategoryJsonBySql();
+            if (categoryJsonBySql == null) {
+                //设置空串,解决缓存穿透
+                stringRedisTemplate.opsForValue().set("categoryJson", "", 1, TimeUnit.DAYS);
+            }
+            return categoryJsonBySql;
+        }
+        Map<String, List<Category2Vo>> map = JSON.parseObject(categoryJson, new TypeReference<Map<String, List<Category2Vo>>>() {
+        });
+        return map;
+    }
+
+    /**
+     * 需要查询数据库等业务方法
+     *
+     * @return
+     */
+    //本地锁锁不住别的服务,有多少相同服务名的当前模块的微服务我们就查询多少次数据库
+    public synchronized Map<String, List<Category2Vo>> getCategoryJsonBySql() {
+        //看看是否已经有线程查过数据库并更新到缓存
+        String categoryJson = stringRedisTemplate.opsForValue().get("categoryJson");
+        if (categoryJson!=null&&!categoryJson.isEmpty()){
+            Map<String, List<Category2Vo>> map = JSON.parseObject(categoryJson, new TypeReference<Map<String, List<Category2Vo>>>() {
+            });
+            return map;
+        }
+        System.out.println("缓存没命中");
+        /**
+         * 2.0为了减少程序和数据库的频繁交互,我们决定将数据先统一查出来,再过滤
+         */
+        //2.0查出所有的CategoryEntity
+        List<CategoryEntity> categoryEntityListAll = baseMapper.selectList(null);
+
         //查出所有的一级分类
-        List<CategoryEntity> levelOne = getLevelOne();
+        List<CategoryEntity> levelOne = getParentByCid(categoryEntityListAll, 0L);
         Map<String, List<Category2Vo>> map = levelOne.stream().collect(Collectors.toMap(a -> a.getCatId().toString(), b -> {
             //查出所有的二级分类
-            List<CategoryEntity> categoryEntityList = baseMapper.selectList(new QueryWrapper<CategoryEntity>().eq("parent_cid", b.getCatId()));
+            List<CategoryEntity> categoryEntityList = getParentByCid(categoryEntityListAll, b.getCatId());
             List<Category2Vo> category2VoList = null;
             if (categoryEntityList != null && !categoryEntityList.isEmpty()) {
                 //构造二级分类vo
@@ -141,8 +192,8 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
                     category2Vo.setId(c.getCatId().toString());
                     category2Vo.setName(c.getName());
                     //找出二级分类的属性List<catalog3> catalog3List并赋值
-                    List<CategoryEntity> catalog3List = baseMapper.selectList(new QueryWrapper<CategoryEntity>().eq("parent_cid", c.getCatId()));
-                    if (catalog3List!=null&&!catalog3List.isEmpty()){
+                    List<CategoryEntity> catalog3List = getParentByCid(categoryEntityListAll, c.getCatId());
+                    if (catalog3List != null && !catalog3List.isEmpty()) {
                         //封装catalog3集合
                         List<Category2Vo.catalog3> catalog3s = catalog3List.stream().map(d -> {
                             Category2Vo.catalog3 catalog3 = new Category2Vo.catalog3();
@@ -158,7 +209,25 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
             }
             return category2VoList;
         }));
+
+        //在本地锁里面查询数据存到缓存保证这个操作的原子性
+        String mapJson = JSON.toJSONString(map);
+        //设置缓存过期时间为随机时间,解决缓存雪崩
+        double random = Math.random();
+        stringRedisTemplate.opsForValue().set("categoryJson", mapJson, new Double(Math.random() * 100).longValue(), TimeUnit.MINUTES);
+
         return map;
+    }
+
+    /**
+     * 利用所有数据,通过catId来过滤我们的分类
+     *
+     * @param categoryEntityListAll
+     * @param catId
+     * @return
+     */
+    private List<CategoryEntity> getParentByCid(List<CategoryEntity> categoryEntityListAll, Long catId) {
+        return categoryEntityListAll.stream().filter(a -> a.getParentCid() == catId).collect(Collectors.toList());
     }
 
     private List<Long> getPath(List<Long> list, Long catelogId) {

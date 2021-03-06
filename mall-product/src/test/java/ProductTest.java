@@ -9,6 +9,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.lang.reflect.Array;
@@ -52,5 +54,22 @@ public class ProductTest {
     public void test3(){
         Long[] path = categoryService.findCateLogPath((long) 229);
         log.info("完整路径{}", Arrays.asList(path));
+    }
+
+    @Autowired
+    StringRedisTemplate stringRedisTemplate;
+
+    @Test
+    public void testRedis(){
+        Object v1 = stringRedisTemplate.opsForValue().get("v1");
+        System.out.println(v1);
+    }
+
+    @Test
+    public void testRandom(){
+        double random = Math.random()*100;
+        System.out.println(random);
+        long l = new Double(random).longValue();
+        System.out.println(l);
     }
 }

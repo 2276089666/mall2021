@@ -1,12 +1,17 @@
-#生产环境开启日志,看一下sql等信息
+#生产环境开启日志,看一下sql等信息,最终要调成info级别,频繁打印日志会降低我们的吞吐量
 logging:
   level:
-    com.cloud.mall: debug
+    com.cloud.mall: info
 
 spring:
   datasource:
     hikari:
       max-lifetime: 500000
-#      关闭模板引擎缓存,开发期间的实时效果
+#      关闭模板引擎缓存,开发期间的实时效果,开启缓存可以优化程序吞吐量
   thymeleaf:
     cache: false
+
+  redis:
+    host: 101.201.124.233
+    port: 6379
+
