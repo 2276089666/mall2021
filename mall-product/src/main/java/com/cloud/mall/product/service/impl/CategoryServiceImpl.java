@@ -13,15 +13,17 @@ import com.cloud.mall.product.service.CategoryBrandRelationService;
 import com.cloud.mall.product.service.CategoryService;
 import com.cloud.mall.product.vo.Category2Vo;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
+import org.redisson.client.RedisClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -140,12 +142,12 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
      * @return
      */
     @Override
-    public Map<String, List<Category2Vo>> getCategoryJson() {
+    public Map<String, List<Category2Vo>> getCategoryJson()  {
         // TODO: 2021/3/6 1. 空结果缓存:解决缓存穿透(多个请求对0个缓存 n:0)   2.设置过期时间(加随机值):解决缓存雪崩(多个请求对多个缓存同时失效 n:n)   3.加锁:解决缓存击穿 (多个请求对1个缓存,这个缓存失效 n:1)
 
         String categoryJson = stringRedisTemplate.opsForValue().get("categoryJson");
         if (StringUtils.isEmpty(categoryJson)) {
-            Map<String, List<Category2Vo>> categoryJsonBySql = getCategoryJsonBySql();
+            Map<String, List<Category2Vo>> categoryJsonBySql = getCategoryJsonBySqlONRedisson();
             if (categoryJsonBySql == null) {
                 //设置空串,解决缓存穿透
                 stringRedisTemplate.opsForValue().set("categoryJson", "", 1, TimeUnit.DAYS);
@@ -165,8 +167,101 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
     //本地锁锁不住别的服务,有多少相同服务名的当前模块的微服务我们就查询多少次数据库
     public synchronized Map<String, List<Category2Vo>> getCategoryJsonBySql() {
         //看看是否已经有线程查过数据库并更新到缓存
+        return getDataFromDb();
+    }
+
+
+    /**
+     * redis分布式锁底层实现
+     *
+     * @return
+     */
+    public Map<String, List<Category2Vo>> getCategoryJsonBySqlONRedisLock()  {
+        //为了删锁的时候不删别人的锁,我们每个线程加锁的时候锁的value都生成唯一的token,redis官网的set指令下面有说明
+        String token = UUID.randomUUID().toString();
+        //占分布式锁,而且为了保证加锁后断电等意外,我们的锁没有得到释放,造成死锁,所以我们设置锁的过期时间,并且保持加锁和过期时间这一操作是原子性
+        Boolean aBoolean = stringRedisTemplate.opsForValue().setIfAbsent("lock", token,100,TimeUnit.SECONDS);
+        if (aBoolean) {
+            log.info("获取分布式锁成功,key:\t{},value:\t{}","lock",token);
+            Map<String, List<Category2Vo>> dataFromDb=null;
+            //竞争到锁就执行我们的业务
+            try {
+                dataFromDb= getDataFromDb();
+            }finally {
+                String lockValue = stringRedisTemplate.opsForValue().get("lock");
+//            //删除锁之前看看是不是我们上的锁,避免自己的锁自动过期,删掉了别人的锁
+//            if (token.equals(lockValue)){
+//                //删除我们的分布式锁,让别的线程可以重新竞争锁
+//                stringRedisTemplate.delete("lock");
+//            }
+                //但是删除锁也是要原子性的,redis官网的set指令下面有说明,用rua脚本执行删锁
+                String script="if redis.call(\"get\",KEYS[1]) == ARGV[1]\n" +
+                        "then\n" +
+                        "    return redis.call(\"del\",KEYS[1])\n" +
+                        "else\n" +
+                        "    return 0\n" +
+                        "end";
+                Long execute = stringRedisTemplate.execute(new DefaultRedisScript<Long>(script, Long.class), Arrays.asList("lock"), token);
+                if (execute==1){
+                    log.info("释放分布式锁成功");
+                }else {
+                    log.info("释放分布式锁失败");
+                }
+            }
+
+            return dataFromDb;
+        } else {
+            //竞争锁失败,过一会重试
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            log.info("获取分布式锁失败,等待100毫秒重试");
+            return getCategoryJsonBySqlONRedisLock();
+        }
+        // TODO: 2021/3/7 还有怎么自动续期等问题,如果想简单点我们只要把锁的过期时间弄长一点就行,redis官网的set指令下面有说明,不同的语言有不同的解决方案,Java是Redisson
+    }
+
+    @Autowired
+    RedissonClient redisson;
+
+    /**
+     * 使用redisson的可重入锁实现分布式锁
+     * @return
+     */
+    public Map<String, List<Category2Vo>> getCategoryJsonBySqlONRedisson()  {
+        //只要锁的名字相同就是同一把锁,redisson存我们的锁的类型为hash key:redissonLock {key:81122499-2141-4827-bb50-63c176caa1bc:91 value:1}
+        //其中91为我们的线程id
+        RLock redissonLock = redisson.getLock("redissonLock");
+        //没有拿到锁的线程会阻塞式等待
+        redissonLock.lock();
+
+        /**
+         * redissonLock.lock(20,TimeUnit.SECONDS);
+         * 自己设置过期时间,他不会给我们自动续期
+         * 1.如果我们传递了过期时间,redisson会发送给redis执行脚本,进行占锁
+         * 2.如果没有指定,默认时间 lockWatchdogTimeout = 30 * 1000;
+         * 3.占锁成功就会来个定时任务,1/3的看门狗时间后执行,重置过期时间为看门狗时间30s
+         */
+        log.info("加锁成功");
+        Map<String, List<Category2Vo>> dataFromDb=null;
+        try {
+            //锁会由redisson的看门狗自动续期30s,出现问题,锁没有续期最多30s所就会释放
+            dataFromDb= getDataFromDb();
+        }finally {
+            log.info("释放锁");
+            redissonLock.unlock();
+        }
+        return dataFromDb;
+    }
+
+
+    private Map<String, List<Category2Vo>> getDataFromDb() {
+        //看看是否已经有线程查过数据库并更新到缓存
         String categoryJson = stringRedisTemplate.opsForValue().get("categoryJson");
-        if (categoryJson!=null&&!categoryJson.isEmpty()){
+        if (categoryJson != null && !categoryJson.isEmpty()) {
+            log.info("缓存命中");
             Map<String, List<Category2Vo>> map = JSON.parseObject(categoryJson, new TypeReference<Map<String, List<Category2Vo>>>() {
             });
             return map;
@@ -210,7 +305,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
             return category2VoList;
         }));
 
-        //在本地锁里面查询数据存到缓存保证这个操作的原子性
+        //在本地锁里面查询数据存到redis缓存保证这个操作的原子性
         String mapJson = JSON.toJSONString(map);
         //设置缓存过期时间为随机时间,解决缓存雪崩
         double random = Math.random();

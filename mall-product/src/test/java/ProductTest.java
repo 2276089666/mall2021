@@ -7,6 +7,7 @@ import com.cloud.mall.product.service.CategoryService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -71,5 +72,13 @@ public class ProductTest {
         System.out.println(random);
         long l = new Double(random).longValue();
         System.out.println(l);
+    }
+
+    @Autowired
+    RedissonClient redissonClient;
+
+    @Test
+    public void RedissonTest(){
+        System.out.println(redissonClient);
     }
 }
