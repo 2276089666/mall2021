@@ -227,13 +227,29 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
     RedissonClient redisson;
 
     /**
+     * 缓存与数据库的一致性
+     * 1.双写模式:先修改数据库再修改缓存(问题:当前后两个线程都去修改数据库,先修改数据库的线程比后修改数据库的线程后修改缓存,会导致后修改数据库的线程的最新数据的缓存被覆盖,出现缓存数据库数据不一致)
+     * 解决1:加锁(分布式读写锁),保证某个线程修改数据库和更新缓存这次操作全部完成后,别的线程才能对同一数据进行修改数据库和更新缓存操作
+     * 解决2:每个缓存有过期时间,缓存一过期,脏数据就没有了
+     * 2.失效模式:先修改数据库再删除缓存(问题:A,B,C三个线程,按照时间先后:(A写a-1) -> (B写a-2) -> (A删缓存) -> (c读a-1) -> (B删缓存) -> (c更新缓存a-1)  数据库:a-2,缓存a-1,两个不一致)
+     * 同上
+     * 3.使用中间件canal,伪装自己是mysql的slave解析binlog,mysql表数据有变化他会同步到redis里面去
+     */
+
+    /**
      * 使用redisson的可重入锁实现分布式锁
      * @return
      */
     public Map<String, List<Category2Vo>> getCategoryJsonBySqlONRedisson()  {
         //只要锁的名字相同就是同一把锁,redisson存我们的锁的类型为hash key:redissonLock {key:81122499-2141-4827-bb50-63c176caa1bc:91 value:1}
         //其中91为我们的线程id
-        RLock redissonLock = redisson.getLock("redissonLock");
+        /**
+         * 锁的名字
+         * 粒度越细,越好
+         * 11号商品  product-11-lock
+         * 12号商品  product-12-lock
+         */
+        RLock redissonLock = redisson.getLock("CategoryJsonLock");
         //没有拿到锁的线程会阻塞式等待
         redissonLock.lock();
 
