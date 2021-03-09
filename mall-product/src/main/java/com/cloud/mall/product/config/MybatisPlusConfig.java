@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  */
 @Configuration
 @EnableTransactionManagement
+//配置我们的dao下的mapper的路径
 @MapperScan(value = "com.cloud.mall.product.dao")
 public class MybatisPlusConfig {
     /**

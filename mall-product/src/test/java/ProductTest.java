@@ -62,7 +62,7 @@ public class ProductTest {
 
     @Test
     public void testRedis(){
-        Object v1 = stringRedisTemplate.opsForValue().get("v1");
+        String v1 = stringRedisTemplate.opsForValue().get("cache_category");
         System.out.println(v1);
     }
 

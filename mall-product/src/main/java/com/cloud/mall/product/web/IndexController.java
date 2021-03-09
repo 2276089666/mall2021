@@ -29,7 +29,7 @@ public class IndexController {
     public String indexPage(Model model){
         long begin = System.currentTimeMillis();
         List<CategoryEntity> categoryEntityList =categoryService.getLevelOne();
-        log.info("查询数据库一级菜单消耗的时间为:{}",System.currentTimeMillis()-begin);
+        log.info("访问一级菜单消耗的时间为:{}",System.currentTimeMillis()-begin);
         model.addAttribute("categorys",categoryEntityList);
         //因为有mvc的前缀和后缀拼串,这个请求就会返回到src\main\resources\templates\index.html
         return "index";

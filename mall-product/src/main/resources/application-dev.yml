@@ -14,4 +14,14 @@ spring:
   redis:
     host: 101.201.124.233
     port: 6379
-
+#    缓存抽象的类型
+  cache:
+    type: redis
+#    配置缓存的过期时间，毫秒为单位
+    redis:
+      time-to-live: 60000
+#      缓存空值，解决缓存穿透
+      cache-null-values: true
+      use-key-prefix: true
+#      如果我们配置了key的前缀就用我们的，没有默认就是缓存的名字作为前缀,最好使用默认的，在redis可视化工具他会给我们同一个的缓存放到一个文件夹下
+#      key-prefix:
