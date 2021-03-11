@@ -7,7 +7,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
-import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 /**
@@ -26,6 +25,7 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
  *     -->getIfAvailable（看RedisCacheConfiguration是否可用，没有就用默认的）-->想修改redis缓存的配置-->给容器中添加一个RedisCacheConfiguration
  *     -->RedisCacheManager会读取RedisCacheConfiguration管理所有的缓存分区（我们给的缓存名默认就是一个区）
  */
+
 /**
  *  spring-cache的不足：
  *      读模式：
@@ -39,7 +39,7 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
  *
  *    总结：常规数据用spring-cache，特殊数据特殊设计
  *
- *
+ *     spring-cache使用aop帮我们做了那些每个方法都要的缓存查询缓存保存等冗余操作
  *
  */
 @EnableCaching
@@ -49,17 +49,18 @@ public class MyCacheConfig {
      * package org.springframework.boot.autoconfigure.cache;
      * RedisCacheConfiguration
      * 人家是这么配置的
+     *
      * @param cacheProperties
      * @return
      */
     @Bean
-    RedisCacheConfiguration redisCacheConfiguration(CacheProperties cacheProperties){
+    RedisCacheConfiguration redisCacheConfiguration(CacheProperties cacheProperties) {
         RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig();
         //由于方法的返回值还是RedisCacheConfiguration我们要把cacheConfig=method()
         //key
-        config=config.serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()));
+        config = config.serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()));
         //value
-        config=config.serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericFastJsonRedisSerializer()));
+        config = config.serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericFastJsonRedisSerializer()));
 
         /**
          * 我们的配置文件配置的缓存过期时间失效，查看源码发现RedisCacheConfiguration里面可以抄

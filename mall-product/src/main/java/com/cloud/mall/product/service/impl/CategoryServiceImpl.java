@@ -12,14 +12,11 @@ import com.cloud.mall.product.entity.CategoryEntity;
 import com.cloud.mall.product.service.CategoryBrandRelationService;
 import com.cloud.mall.product.service.CategoryService;
 import com.cloud.mall.product.vo.Category2Vo;
-import com.netflix.ribbon.proxy.annotation.CacheProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
-import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -131,12 +128,13 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
     // @CacheEvict(cacheNames="category",key = "'getLevelOne'")
     // 我们修改了数删除缓存，不仅要删除一级分类菜单getLevelOne的缓存，还要删除所有getCategoryJson的缓存
 //    @CacheEvict(cacheNames="category",allEntries = true) //allEntries删除category这个分区的所有缓存
+
     /**
-     *  @CacheEvict(cacheNames="category",allEntries = true)和@Caching可以2选一
+     * @CacheEvict(cacheNames="category",allEntries = true)和@Caching可以2选一
      */
     @Caching(evict = {
-            @CacheEvict(cacheNames = "category",key = "'getLevelOne'"),
-            @CacheEvict(cacheNames = "category",key = "'getCategoryJson'")
+            @CacheEvict(cacheNames = "category", key = "'getLevelOne'"),
+            @CacheEvict(cacheNames = "category", key = "'getCategoryJson'")
     })
     @Override
     @Transactional(rollbackFor = Exception.class)//级联更新要加上事务
@@ -150,7 +148,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 
 
     // spring缓存抽象的缓存分区，按照业务类型分
-    @Cacheable(cacheNames={"category"},key = "#root.methodName",sync = true)
+    @Cacheable(cacheNames = {"category"}, key = "#root.methodName", sync = true)
     @Override
     public List<CategoryEntity> getLevelOne() {
         List<CategoryEntity> categoryEntityList = baseMapper.selectList(new QueryWrapper<CategoryEntity>().eq("parent_cid", 0));
@@ -159,7 +157,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
     }
 
 
-    @Cacheable(cacheNames = {"category"},key = "#root.methodName",sync = true)
+    @Cacheable(cacheNames = {"category"}, key = "#root.methodName", sync = true)
     @Override
     public Map<String, List<Category2Vo>> getCategoryJson() {
         return getCategoryJsonBySqlONRedisson();
@@ -174,7 +172,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
      *
      * @return
      */
-    @Cacheable(cacheNames = {"category"},key = "#root.methodName")
+    @Cacheable(cacheNames = {"category"}, key = "#root.methodName")
     public Map<String, List<Category2Vo>> getCategoryJson1() {
         // TODO: 2021/3/6 1. 空结果缓存:解决缓存穿透(多个请求对0个缓存 n:0)   2.设置过期时间(加随机值):解决缓存雪崩(多个请求对多个缓存同时失效 n:n)   3.加锁:解决缓存击穿 (多个请求对1个缓存,这个缓存失效 n:1)
 
@@ -187,7 +185,6 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         });
         return map;
     }
-
 
 
     /**
@@ -353,6 +350,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 
     /**
      * 没用Cacheable分布式锁查询业务的话应该调我们这个方法
+     *
      * @return
      */
     private Map<String, List<Category2Vo>> getDataFromDb() {
@@ -431,7 +429,6 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         list.add(categoryEntity.getCatId());
         return list;
     }
-
 
 
 }
