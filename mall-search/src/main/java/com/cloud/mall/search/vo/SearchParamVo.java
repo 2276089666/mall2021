@@ -36,12 +36,15 @@ public class SearchParamVo {
     private String sort;
 
     /**
-     * 是否有货
+     * 是否有货,0无货,1有货,默认查询有库存的
      */
     private Integer hasStock;
 
     /**
      * 价格区间查询
+     * skuPrice=400_1900  400到1900之间
+     * skuPrice=_400      400以下
+     * skuPrice=1900_     1900以上
      */
     private String skuPrice;
 
@@ -52,11 +55,12 @@ public class SearchParamVo {
 
     /**
      * 按照属性
+     * attrs=1_3G:4G:5G&attrs=2_骁龙 845&attrs=4_高清屏
      */
     private List<String> attrs;
 
     /**
      * 页码
      */
-    private Integer pageNumber;
+    private Integer pageNumber=1;
 }

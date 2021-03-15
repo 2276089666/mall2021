@@ -29,6 +29,11 @@ public class SearchResponseVo {
     private Long total;
 
     /**
+     * 有多少页的页码数组
+     */
+    private List<Integer> pageNavs;
+
+    /**
      * 总页码
      */
     private  Integer totalPages;
@@ -54,7 +59,7 @@ public class SearchResponseVo {
     public static class AttrVo{
         private Long attrId;
         private String attrName;
-        private String attrValue;
+        private List <String> attrValue;
     }
 
     /**

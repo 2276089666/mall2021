@@ -92,13 +92,13 @@
         "brand_name_agg": {
           "terms": {
             "field": "brandName",
-            "size": 10
+            "size": 1
           }
         },
         "brand_img_agg": {
           "terms": {
             "field": "brandImg",
-            "size": 10
+            "size": 1
           }
         }
       }
@@ -112,7 +112,7 @@
         "catalog_name_agg": {
           "terms": {
             "field": "catalogName",
-            "size": 10
+            "size": 1
           }
         }
       }
@@ -128,10 +128,16 @@
             "size": 10
           },
           "aggs": {
+            "attr_value_agg": {
+              "terms": {
+                "field": "attrs.attrValue",
+                "size": 10
+              }
+            },
             "attr_name_agg": {
               "terms": {
                 "field": "attrs.attrName",
-                "size": 10
+                "size": 1
               }
             }
           }

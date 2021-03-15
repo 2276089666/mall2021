@@ -33,68 +33,8 @@ public class ProductSaveServiceImpl implements ProductSaveService {
     @Override
     public Boolean productStatusUp(List<SkuEsModel> list) throws IOException {
 
-//        1.建立索引和映射关系DSL
-//        PUT product
-//        {
-//            "mappings": {
-//            "properties": {
-//                "skuId": {
-//                    "type": "long"
-//                },
-//                "spuId": {
-//                    "type": "keyword"
-//                },
-//                "skuTitle": {
-//                    "type": "text",
-//                            "analyzer": "ik_smart"
-//                },
-//                "skuPrice": {
-//                    "type": "keyword"
-//                },
-//                "skuImg": {
-//                    "type": "keyword"
-//                },
-//                "saleCount": {
-//                    "type": "long"
-//                },
-//                "hasStock": {
-//                    "type": "boolean"
-//                },
-//                "hotScore": {
-//                    "type": "long"
-//                },
-//                "brandId": {
-//                    "type": "long"
-//                },
-//                "catalogId": {
-//                    "type": "long"
-//                },
-//                "brandName": {
-//                    "type": "keyword"
-//                },
-//                "brandImg": {
-//                    "type": "keyword"
-//                },
-//                "catalogName": {
-//                    "type": "keyword"
-//                },
-//                "attrs": {
-//                    "type": "nested",
-//                            "properties": {
-//                        "attrId": {
-//                            "type": "long"
-//                        },
-//                        "attrName": {
-//                            "type": "keyword"
-//                        },
-//                        "attrValue": {
-//                            "type": "keyword"
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//        }
+//        1.建立索引和映射关系productMappingDSL.json
+
 
 //        2.批量保存
         BulkRequest bulkRequest = new BulkRequest();

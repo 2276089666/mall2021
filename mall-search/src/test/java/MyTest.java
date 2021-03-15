@@ -149,4 +149,10 @@ public class MyTest {
         private String city;
         private String state;
     }
+
+    @Test
+    public void TestMathCeil(){
+        int ceil = (int) Math.ceil(20L / (int) 15);
+        System.out.println(ceil);
+    }
 }

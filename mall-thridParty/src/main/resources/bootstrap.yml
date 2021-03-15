@@ -4,10 +4,10 @@ spring:
   cloud:
     nacos:
       discovery:
-        server-addr: 159.75.22.98:80
+        server-addr: 192.168.18.128:80
       #会默认读我们mall-coupon.yaml的配置文件
       config:
-        server-addr: 159.75.22.98:80
+        server-addr: 192.168.18.128:80
         #配置中心的文件形式
         file-extension: yaml
         namespace: 023b5b50-1f66-4a98-b057-24da8d567c59
