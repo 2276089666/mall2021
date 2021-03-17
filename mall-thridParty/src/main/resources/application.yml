@@ -6,8 +6,9 @@ spring:
   cloud:
     alicloud:
 #      阿里云主账号AccessKey拥有所有API的访问权限，风险很高。强烈建议您创建并使用RAM账号进行API访问或日常运维，请登录RAM控制台创建RAM账号。
-      access-key:
-      secret-key:
+      #账号已禁用,需要开启
+      access-key: LTAI4G7vTy7Dmg2eTS4WGipG
+      secret-key: NNCfEG6W9lmxWaADxcymT9bhEp3eOj
       bucket: mall2021
       oss:
         endpoint: oss-cn-beijing.aliyuncs.com

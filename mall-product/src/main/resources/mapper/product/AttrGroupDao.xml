@@ -3,7 +3,7 @@
 
 <mapper namespace="com.cloud.mall.product.dao.AttrGroupDao">
 
-	<!-- 可根据自己的需求，是否要使用 -->
+    <!-- 可根据自己的需求，是否要使用 -->
     <resultMap type="com.cloud.mall.product.entity.AttrGroupEntity" id="attrGroupMap">
         <result property="attrGroupId" column="attr_group_id"/>
         <result property="attrGroupName" column="attr_group_name"/>
@@ -12,6 +12,31 @@
         <result property="icon" column="icon"/>
         <result property="catelogId" column="catelog_id"/>
     </resultMap>
+
+    <resultMap id="SpuItemBaseAttrs" type="com.cloud.mall.product.vo.SpuItemBaseAttr">
+        <result property="groupName" column="attr_group_name"></result>
+        <collection property="attrs" ofType="com.cloud.mall.product.vo.Attr">
+            <result property="attrId" column="attr_id"></result>
+            <result property="attrName" column="attr_name"></result>
+            <result property="attrValue" column="attr_value"></result>
+        </collection>
+    </resultMap>
+
+    <select id="getAttrsAndAttrGroupBySpuId" resultMap="SpuItemBaseAttrs">
+            SELECT
+        pag.attr_group_name,
+        paar.attr_id,
+        pa.attr_name,
+        ppav.attr_value
+    FROM
+        pms_attr_group pag
+        LEFT JOIN pms_attr_attrgroup_relation paar ON pag.attr_group_id = paar.attr_group_id
+        LEFT JOIN pms_attr pa ON pa.attr_id = paar.attr_id
+        LEFT JOIN pms_product_attr_value ppav ON ppav.attr_id = pa.attr_id
+    WHERE
+        pag.catelog_id = #{catalogId}
+        AND ppav.spu_id = #{spuId}
+    </select>
 
 
 </mapper>

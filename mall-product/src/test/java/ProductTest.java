@@ -1,9 +1,13 @@
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.cloud.mall.product.MallProductApplication;
+import com.cloud.mall.product.dao.AttrGroupDao;
+import com.cloud.mall.product.dao.SkuSaleAttrValueDao;
 import com.cloud.mall.product.entity.BrandEntity;
 import com.cloud.mall.product.service.BrandService;
 import com.cloud.mall.product.service.CategoryService;
+import com.cloud.mall.product.vo.SkuItemSaleAttr;
+import com.cloud.mall.product.vo.SpuItemBaseAttr;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -80,5 +84,23 @@ public class ProductTest {
     @Test
     public void RedissonTest(){
         System.out.println(redissonClient);
+    }
+
+
+    @Autowired
+    AttrGroupDao attrGroupDao;
+    @Test
+    public void queryWithTables(){
+        List<SpuItemBaseAttr> attrsAndAttrGroupBySpuId = attrGroupDao.getAttrsAndAttrGroupBySpuId(225L, 5L);
+        System.out.println(attrsAndAttrGroupBySpuId);
+    }
+
+    @Autowired
+    SkuSaleAttrValueDao skuSaleAttrValueDao;
+
+    @Test
+    public void getSaleAttrsBySpuId(){
+        List<SkuItemSaleAttr> saleAttrsBySpuId = skuSaleAttrValueDao.getSaleAttrsBySpuId(5L);
+
     }
 }

@@ -13,6 +13,8 @@ import com.cloud.mall.product.service.AttrService;
 import com.cloud.mall.product.service.CategoryService;
 import com.cloud.mall.product.vo.AttrGroupWithAttrVo;
 import com.cloud.mall.product.vo.AttrVo;
+import com.cloud.mall.product.vo.ItemVo;
+import com.cloud.mall.product.vo.SpuItemBaseAttr;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -88,6 +90,11 @@ public class AttrGroupServiceImpl extends ServiceImpl<AttrGroupDao, AttrGroupEnt
             return attrGroupWithAttrVo;
         }).collect(Collectors.toList());
         return attrGroupWithAttrVos;
+    }
+
+    @Override
+    public List<SpuItemBaseAttr> getAttrsAndAttrGroupBySpuId(Long catalogId, Long spuId) {
+        return this.baseMapper.getAttrsAndAttrGroupBySpuId(catalogId,spuId);
     }
 
 

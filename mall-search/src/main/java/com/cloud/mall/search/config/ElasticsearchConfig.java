@@ -36,7 +36,7 @@ public class ElasticsearchConfig {
     public RestHighLevelClient getRestHighLevelClient() {
         RestHighLevelClient client = new RestHighLevelClient(
                 RestClient.builder(
-                        new HttpHost("192.168.18.128", 9200, "http")
+                        new HttpHost("192.168.18.129", 9200, "http")
 //                        如果有多个节点时传入多个new HttpHost("localhost", 9201, "http")
                         ));
         return client;

@@ -25,3 +25,9 @@ spring:
       use-key-prefix: true
 #      如果我们配置了key的前缀就用我们的，没有默认就是缓存的名字作为前缀,最好使用默认的，在redis可视化工具他会给我们同一个的缓存放到一个文件夹下
 #      key-prefix:
+product:
+  threadpool:
+    core-pool-size: 50
+    maximum-pool-size: 200
+#    单位设置的是秒
+    keep-alive-time: 6000

@@ -6,10 +6,10 @@ spring:
   cloud:
     nacos:
       discovery:
-        server-addr: 192.168.18.128:80
+        server-addr: 192.168.18.129:80
 #        会默认读我们mall-coupon.yaml的配置文件
       config:
-        server-addr: 192.168.18.128:80
+        server-addr: 192.168.18.129:80
 #        配置中心的文件形式
         file-extension: yaml
 #        配置中心的命名空间,可做生产和测试环境隔离,但是我们使用分组去做环境隔离,我们每个微服务创建一个命名空间

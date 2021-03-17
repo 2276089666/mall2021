@@ -3,9 +3,10 @@ package com.cloud.mall.product.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import com.cloud.common.utils.PageUtils;
-import com.cloud.mall.product.entity.AttrEntity;
 import com.cloud.mall.product.entity.AttrGroupEntity;
 import com.cloud.mall.product.vo.AttrGroupWithAttrVo;
+import com.cloud.mall.product.vo.ItemVo;
+import com.cloud.mall.product.vo.SpuItemBaseAttr;
 
 import java.util.List;
 import java.util.Map;
@@ -24,5 +25,7 @@ public interface AttrGroupService extends IService<AttrGroupEntity> {
     PageUtils queryPages(Map<String, Object> params, Long cateLogId);
 
     List<AttrGroupWithAttrVo> getAttrAndGroupByCatelogId(Long catelogId);
+
+    List<SpuItemBaseAttr> getAttrsAndAttrGroupBySpuId(Long catalogId, Long spuId);
 }
 

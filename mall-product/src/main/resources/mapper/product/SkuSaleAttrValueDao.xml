@@ -12,6 +12,31 @@
         <result property="attrValue" column="attr_value"/>
         <result property="attrSort" column="attr_sort"/>
     </resultMap>
+    <resultMap id="SkuItemSaleAttr" type="com.cloud.mall.product.vo.SkuItemSaleAttr">
+        <result property="attrId" column="attr_id"></result>
+        <result property="attrName" column="attr_name"></result>
+<!--        如果ofType是string我们的result可以不指定property-->
+        <collection property="attrValue" ofType="com.cloud.mall.product.vo.AttrValueWithSkuIdVo">
+            <result property="attrValue" column="attr_value"></result>
+            <result property="skuIds" column="sku_ids"></result>
+        </collection>
+    </resultMap>
+    <select id="getSaleAttrsBySpuId" resultMap="SkuItemSaleAttr">
+        SELECT
+        pssav.attr_id,
+        pssav.attr_name,
+        pssav.attr_value,
+        GROUP_CONCAT( DISTINCT psi.sku_id ) sku_ids
+    FROM
+        pms_sku_info psi
+        LEFT JOIN pms_sku_sale_attr_value pssav ON pssav.sku_id = psi.sku_id
+    WHERE
+        psi.spu_id = #{spuId}
+    GROUP BY
+        pssav.attr_id,
+        pssav.attr_name,
+        pssav.attr_value
+    </select>
 
 
 </mapper>
