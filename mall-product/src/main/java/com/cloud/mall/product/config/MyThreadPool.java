@@ -14,6 +14,11 @@ import java.util.concurrent.*;
 @EnableConfigurationProperties(MyThreadPoolProperties.class)
 @Configuration
 public class MyThreadPool {
+    /**
+     * 自定义全局线程池
+     * @param myThreadPoolProperties
+     * @return
+     */
     @Bean
     public ThreadPoolExecutor threadPoolExecutor(MyThreadPoolProperties myThreadPoolProperties) {
         return new ThreadPoolExecutor(myThreadPoolProperties.getCorePoolSize(), myThreadPoolProperties.getMaximumPoolSize(), myThreadPoolProperties.getKeepAliveTime(), TimeUnit.SECONDS, new LinkedBlockingQueue<>(100000), Executors.defaultThreadFactory(), new ThreadPoolExecutor.AbortPolicy());

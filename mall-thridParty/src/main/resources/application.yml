@@ -12,3 +12,5 @@ spring:
       bucket: mall2021
       oss:
         endpoint: oss-cn-beijing.aliyuncs.com
+  profiles:
+    active: dev

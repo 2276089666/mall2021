@@ -28,6 +28,7 @@
         <module>mall-gateway</module>
         <module>mall-thridParty</module>
         <module>mall-search</module>
+        <module>mall-authserver</module>
     </modules>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

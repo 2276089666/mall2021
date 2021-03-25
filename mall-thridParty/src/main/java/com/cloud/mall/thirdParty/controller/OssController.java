@@ -1,4 +1,4 @@
-package com.cloud.mall.thirdParty;
+package com.cloud.mall.thirdParty.controller;
 
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClient;
