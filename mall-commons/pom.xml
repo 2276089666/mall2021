@@ -11,7 +11,7 @@
 
     <artifactId>mall-commons</artifactId>
 
-    <description>各个微服务的公共模块部分</description>
+    <description>各个微服务的公共模块部分,在真正的微服务中这个模块是不存在的,切记,该有的冗余还是得有,解耦</description>
     <dependencies>
 <!--        nacos的注册中心-->
         <dependency>

@@ -31,6 +31,7 @@ public class MallExceptionControllerAdvice {
         BindingResult bindingResult = e.getBindingResult();
         HashMap<String, String> errorMap = new HashMap<>();
         bindingResult.getFieldErrors().forEach((error)->{
+            // 实体类的一个属性最好标一个校验注解,不然当一个属性出现多个异常时,我们的map的key就会重复,导致出错
             errorMap.put(error.getField(),error.getDefaultMessage());
         });
         return R.error(ExceptionCode.VALID_EXCEPTION.getCode(),ExceptionCode.VALID_EXCEPTION.getMessage()).put("data",errorMap);

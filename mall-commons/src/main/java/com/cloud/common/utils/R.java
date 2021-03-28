@@ -45,6 +45,10 @@ public class R extends HashMap<String, Object> {
         return JSON.parseObject(dataString,tTypeReference);
     }
 
+    public String getMsg(){
+        return (String) get("msg");
+    }
+
     public R() {
         put("code", 0);
         put("msg", "success");
